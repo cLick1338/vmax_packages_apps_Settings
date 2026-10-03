@@ -15,6 +15,9 @@
      limitations under the License.
 -->
 <resources>
+    <!-- Whether the device provides vmaxdisplay's persistent gamma correction control. -->
+    <bool name="config_showGammaCorrection">false</bool>
+
     <!-- Indicates whether device has a front facing fingerprint sensor (not udfps). -->
     <bool name="config_is_front_facing_fps" translatable="false">false</bool>
 
@@ -37,4 +40,8 @@
 
     <!-- Whether to show min refresh rate in display settings -->
     <bool name="config_show_min_refresh_rate_switch">false</bool>
+    <!-- Optional density scaling for panels that do not adjust density with resolution.
+         Leave zero to use the framework's normal density handling. -->
+    <integer name="config_screenResolutionBaseWidth">0</integer>
+    <integer name="config_screenResolutionBaseDensity">0</integer>
 </resources>

@@ -17,11 +17,13 @@
 package com.android.settings.display;
 
 import static com.google.common.truth.Truth.assertThat;
-
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.hardware.display.DisplayManager;
 import android.view.Display;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -30,59 +32,59 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.settings.core.BasePreferenceController;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ScreenResolutionControllerTest {
-    private ScreenResolutionController mController;
-    private int mHighWidth;
-    private int mFullWidth;
+    private Context mContext;
+    private Display mDisplay;
 
     @Before
     public void setUp() {
-        Context context = spy(ApplicationProvider.getApplicationContext());
-        mController = spy(new ScreenResolutionController(context, "test"));
-
-        mHighWidth = mController.getHighWidth();
-        mFullWidth = mController.getFullWidth();
+        mContext = spy(ApplicationProvider.getApplicationContext());
+        DisplayManager manager = mock(DisplayManager.class);
+        mDisplay = mock(Display.class);
+        doReturn(manager).when(mContext).getSystemService(DisplayManager.class);
+        when(manager.getDisplay(Display.DEFAULT_DISPLAY)).thenReturn(mDisplay);
     }
 
     @Test
-    @Ignore("b/337417619")
-    public void getAvailabilityStatus_hasFhdAndQhdModes_returnAvailable() {
-        Display.Mode modeA = new Display.Mode(0, mHighWidth, 0, 0);
-        Display.Mode modeB = new Display.Mode(0, mFullWidth, 0, 0);
-        Display.Mode[] modes = {modeA, modeB};
-        doReturn(modes).when(mController).getSupportedModes();
+    public void threeResolutions_available() {
+        when(mDisplay.getSupportedModes()).thenReturn(new Display.Mode[] {
+                new Display.Mode(1, 1440, 2880, 60f),
+                new Display.Mode(2, 720, 1440, 60f),
+                new Display.Mode(3, 1080, 2160, 60f)});
 
-        assertThat(mController.getAvailabilityStatus())
-                .isEqualTo(BasePreferenceController.AVAILABLE);
+        ScreenResolutionController controller = new ScreenResolutionController(mContext, "test");
+
+        assertThat(controller.getAvailabilityStatus()).isEqualTo(BasePreferenceController.AVAILABLE);
+        assertThat(controller.getAllSupportedResolutions()).hasSize(3);
     }
 
     @Test
-    public void getAvailabilityStatus_hasOneMode_returnUnsupported() {
-        doReturn(0).when(mController).getHighWidth();
+    public void sameResolutionAtDifferentRefreshRates_unsupported() {
+        when(mDisplay.getSupportedModes()).thenReturn(new Display.Mode[] {
+                new Display.Mode(1, 1080, 2160, 60f),
+                new Display.Mode(2, 1080, 2160, 90f)});
 
-        assertThat(mController.getAvailabilityStatus())
+        assertThat(new ScreenResolutionController(mContext, "test").getAvailabilityStatus())
                 .isEqualTo(BasePreferenceController.UNSUPPORTED_ON_DEVICE);
     }
 
     @Test
-    public void updateState_HighResolution_shouldSetSummaryToHighResolution() {
-        int width = mHighWidth;
-        doReturn(width).when(mController).getDisplayWidth();
+    public void summary_readsActiveModeIncludingIntermediateResolution() {
+        when(mDisplay.getSupportedModes()).thenReturn(new Display.Mode[] {
+                new Display.Mode(1, 720, 1440, 60f),
+                new Display.Mode(2, 1080, 2160, 60f),
+                new Display.Mode(3, 1440, 2880, 60f)});
+        ScreenResolutionController controller = new ScreenResolutionController(mContext, "test");
 
-        assertThat(mController.getSummary().toString()).isEqualTo("High resolution");
-    }
-
-    @Test
-    @Ignore("b/337417619")
-    public void updateState_FullResolution_shouldSetSummaryToFullResolution() {
-        int width = mFullWidth;
-        doReturn(width).when(mController).getDisplayWidth();
-
-        assertThat(mController.getSummary().toString()).isEqualTo("Full resolution");
+        when(mDisplay.getMode()).thenReturn(new Display.Mode(2, 1080, 2160, 60f));
+        assertThat(controller.getSummary().toString()).isEqualTo("1080x2160");
+        when(mDisplay.getMode()).thenReturn(new Display.Mode(1, 720, 1440, 60f));
+        assertThat(controller.getSummary().toString()).isEqualTo("720x1440");
+        when(mDisplay.getMode()).thenReturn(new Display.Mode(3, 1440, 2880, 60f));
+        assertThat(controller.getSummary().toString()).isEqualTo("1440x2880");
     }
 }

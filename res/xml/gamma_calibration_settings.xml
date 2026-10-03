@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- //Vmax -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/gamma_calibration_title">
+    <com.android.settingslib.widget.LayoutPreference
+        android:key="calibration_controls"
+        android:layout="@layout/gamma_calibration_controls"
+        android:selectable="false" />
+    <PreferenceCategory android:key="calibration_points"
+        android:title="@string/gamma_calibration_points" />
+    <Preference android:key="calibration_import" android:title="@string/gamma_calibration_import" />
+    <Preference android:key="calibration_export" android:title="@string/gamma_calibration_export" />
+    <Preference android:key="calibration_reset" android:title="@string/gamma_calibration_reset" />
+</PreferenceScreen>

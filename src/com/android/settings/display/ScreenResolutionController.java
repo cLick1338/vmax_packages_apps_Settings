@@ -19,13 +19,19 @@ package com.android.settings.display;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.display.DisplayManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Display;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceScreen;
 
-import com.android.settings.R;
 import com.android.settings.core.BasePreferenceController;
+import com.android.settingslib.core.lifecycle.LifecycleObserver;
+import com.android.settingslib.core.lifecycle.events.OnStart;
+import com.android.settingslib.core.lifecycle.events.OnStop;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,11 +40,13 @@ import java.util.List;
 import java.util.Set;
 
 /** Controller that switch the screen resolution. */
-public class ScreenResolutionController extends BasePreferenceController {
+public class ScreenResolutionController extends BasePreferenceController
+        implements LifecycleObserver, OnStart, OnStop, DisplayManager.DisplayListener {
     private static final String TAG = "ScreenResolutionController";
     static final int HIGHRESOLUTION_IDX = 0;
-    static final int FULLRESOLUTION_IDX = 1;
 
+    private final DisplayManager mDisplayManager;
+    private Preference mPreference;
     private Display mDisplay;
     private Set<Point> mSupportedResolutions = null;
     private int mHighWidth = 0;
@@ -49,15 +57,14 @@ public class ScreenResolutionController extends BasePreferenceController {
     public ScreenResolutionController(Context context, String key) {
         super(context, key);
 
-        mDisplay =
-                mContext.getSystemService(DisplayManager.class).getDisplay(Display.DEFAULT_DISPLAY);
+        mDisplayManager = mContext.getSystemService(DisplayManager.class);
+        mDisplay = mDisplayManager.getDisplay(Display.DEFAULT_DISPLAY);
 
         initSupportedResolutionData();
     }
 
     /**
-     * Initialize the resolution data. So far, we support two resolution switching. Save the width
-     * and the height for high resolution and full resolution.
+     * Save the dimensions of the lowest and highest supported resolutions.
      */
     private void initSupportedResolutionData() {
         // Collect and filter the resolutions
@@ -69,16 +76,17 @@ public class ScreenResolutionController extends BasePreferenceController {
 
         // Get the width and height for high resolution and full resolution
         List<Point> resolutionList = new ArrayList<>(resolutions);
-        if (resolutionList == null || resolutionList.size() != 2) {
+        if (resolutionList.size() < 2) {
             Log.e(TAG, "No support");
             return;
         }
 
-        Collections.sort(resolutionList, (p1, p2) -> p1.x * p1.y - p2.x * p2.y);
+        Collections.sort(resolutionList,
+                (p1, p2) -> Long.compare((long) p1.x * p1.y, (long) p2.x * p2.y));
         mHighWidth = resolutionList.get(HIGHRESOLUTION_IDX).x;
         mHighHeight = resolutionList.get(HIGHRESOLUTION_IDX).y;
-        mFullWidth = resolutionList.get(FULLRESOLUTION_IDX).x;
-        mFullHeight = resolutionList.get(FULLRESOLUTION_IDX).y;
+        mFullWidth = resolutionList.get(resolutionList.size() - 1).x;
+        mFullHeight = resolutionList.get(resolutionList.size() - 1).y;
     }
 
     /** Return true if the device contains two (or more) resolutions. */
@@ -93,18 +101,40 @@ public class ScreenResolutionController extends BasePreferenceController {
 
     @Override
     public CharSequence getSummary() {
-        String summary = null;
-        int width = getDisplayWidth();
-        if (width == mHighWidth) {
-            summary = mContext.getString(R.string.screen_resolution_option_high);
-        } else if (width == mFullWidth) {
-            summary = mContext.getString(R.string.screen_resolution_option_full);
-        } else {
-            summary = mContext.getString(R.string.screen_resolution_title);
-        }
-
-        return summary;
+        return getDisplayWidth() + "x" + getDisplayHeight();
     }
+
+    @Override
+    public void displayPreference(PreferenceScreen screen) {
+        super.displayPreference(screen);
+        mPreference = screen.findPreference(getPreferenceKey());
+    }
+
+    @Override
+    public void onStart() {
+        mDisplayManager.registerDisplayListener(this, new Handler(Looper.getMainLooper()));
+        if (mPreference != null) {
+            updateState(mPreference);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        mDisplayManager.unregisterDisplayListener(this);
+    }
+
+    @Override
+    public void onDisplayChanged(int displayId) {
+        if (displayId == Display.DEFAULT_DISPLAY && mPreference != null) {
+            updateState(mPreference);
+        }
+    }
+
+    @Override
+    public void onDisplayAdded(int displayId) {}
+
+    @Override
+    public void onDisplayRemoved(int displayId) {}
 
     /** Return all supported resolutions of the device. */
     public Set<Point> getAllSupportedResolutions() {
@@ -134,6 +164,11 @@ public class ScreenResolutionController extends BasePreferenceController {
     @VisibleForTesting
     public int getDisplayWidth() {
         return mDisplay.getMode().getPhysicalWidth();
+    }
+
+    @VisibleForTesting
+    public int getDisplayHeight() {
+        return mDisplay.getMode().getPhysicalHeight();
     }
 
     @VisibleForTesting

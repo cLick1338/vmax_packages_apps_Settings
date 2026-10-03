@@ -2876,12 +2876,65 @@
 
     <!-- Display settings screen, screen resolution settings title [CHAR LIMIT=30] -->
     <string name="screen_resolution_title">Screen resolution</string>
+    <!-- Display settings entry and resolution screen title [CHAR LIMIT=30] -->
+    <string name="display_resolution_title">Display resolution</string>
+    <!-- Display settings entry and screen title [CHAR LIMIT=30] -->
+    <string name="gamma_correction_title">Gamma correction</string>
+    <!-- Main switch on the gamma correction screen [CHAR LIMIT=NONE] -->
+    <string name="gamma_correction_main_switch_title">Use gamma correction</string>
+    <!-- Error shown when the gamma correction flag cannot be changed [CHAR LIMIT=NONE] -->
+    <string name="gamma_correction_change_failed">Couldn\'t change gamma correction</string>
+    <!-- Accessibility label for a grayscale gamma calibration square [CHAR LIMIT=NONE] -->
+    <string name="gamma_calibration_square_description">Brightness %1$d of 255</string>
+    <string name="gamma_calibration_title">Calibration</string>
+    <string name="gamma_calibration_default">Default</string>
+    <string name="gamma_calibration_custom">Custom</string>
+    <string name="gamma_calibration_unavailable">Unavailable</string>
+    <string name="gamma_calibration_instructions">Calibration is temporarily off on this screen. Choose a brightness level then adjust \"Calibration value\" until the squares become barely visible then add the point. Repeat at different brightness levels. Avoid adding too many calibration points or multiple of the same value, the correction smoothly interpolates between them. You can tap on points in the list to edit or remove them.</string>
+    <string name="gamma_calibration_pattern_description">Black and adjustable gray checkerboard</string>
+    <string name="gamma_calibration_brightness">Display brightness (real panel percentage)</string>
+    <string name="gamma_calibration_brightness_less">Decrease brightness</string>
+    <string name="gamma_calibration_brightness_more">Increase brightness</string>
+    <string name="gamma_calibration_value_title">Calibration value</string>
+    <string name="gamma_calibration_value_less">Decrease calibration value</string>
+    <string name="gamma_calibration_value_more">Increase calibration value</string>
+    <string name="gamma_calibration_value_description">Calibration value: %1$d. Tap to enter a value.</string>
+    <string name="gamma_calibration_percent">%1$d%%</string>
+    <string name="gamma_calibration_points">Calibration points</string>
+    <string name="gamma_calibration_point">%1$d%% brightness: %2$d</string>
+    <string name="gamma_calibration_add">Add point</string>
+    <string name="gamma_calibration_update">Update point</string>
+    <string name="gamma_calibration_saved_point">Saved point</string>
+    <string name="gamma_calibration_interpolated">Interpolated</string>
+    <string name="gamma_calibration_adjusted">Adjusted — add or update this point to keep it</string>
+    <string name="gamma_calibration_negative">Negative correction; checkerboard shows its magnitude</string>
+    <string name="gamma_calibration_save">Save</string>
+    <string name="gamma_calibration_import">Import calibration</string>
+    <string name="gamma_calibration_export">Export calibration</string>
+    <string name="gamma_calibration_reset">Reset to defaults</string>
+    <string name="gamma_calibration_reset_message">Replace the saved calibration and any unsaved points with the ROM defaults? Your gamma correction toggle will stay unchanged.</string>
+    <string name="gamma_calibration_error">Couldn\'t access calibration. Your saved settings have not been changed.</string>
+    <string name="gamma_calibration_session_error">Couldn\'t start or maintain calibration mode. Reopen this screen to try again.</string>
+    <string name="gamma_calibration_import_error">Use a text file with one brightness percentage (0–100) and calibration value (−255–255) per line, with no duplicate percentages.</string>
+    <string name="gamma_calibration_range">Enter a value from %1$d to %2$d</string>
+    <string name="gamma_calibration_edit_point">Edit point</string>
+    <string name="gamma_calibration_remeasure">Remeasure</string>
+    <string name="gamma_calibration_delete">Delete point</string>
+    <string name="gamma_calibration_discard">Discard unsaved calibration changes?</string>
+    <string name="gamma_calibration_discard_action">Discard</string>
+
     <!-- Display settings screen, screen resolution option for high resolution [CHAR LIMIT=45] -->
     <string name="screen_resolution_option_high">High resolution</string>
     <!-- Display settings screen, screen resolution option for full resolution [CHAR LIMIT=45] -->
     <string name="screen_resolution_option_full">Max resolution</string>
     <!-- The footer message for switch screen resolution [CHAR LIMIT=NONE] -->
     <string name="screen_resolution_footer">Max resolution uses more of your battery. Switching your resolution may cause some apps to restart.</string>
+    <!-- Explanation above the display resolution choices [CHAR LIMIT=NONE] -->
+    <string name="screen_resolution_explanation">Immediately changes the display resolution. A short flash is expected and harmless. Lower resolution for performance and battery life, higher for maximum clarity.</string>
+    <!-- Error shown when a display mode request fails. -->
+    <string name="screen_resolution_change_failed">Couldn\'t change the display resolution</string>
+    <!-- Error shown when the active resolution cannot be saved for boot restore. -->
+    <string name="screen_resolution_save_failed">Couldn\'t save the resolution for restart</string>
     <!-- Message announced to a11y users when they selected one resolution [CHAR LIMIT=NONE] -->
     <string name="screen_resolution_selected_a11y">Selected</string>
 

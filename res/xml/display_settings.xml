@@ -41,6 +41,13 @@
             settings:userRestriction="no_config_brightness"
             settings:controller="com.android.settings.display.AutoBrightnessPreferenceController" />
 
+        <com.android.settingslib.PrimarySwitchPreference
+            android:key="gamma_correction"
+            android:title="@string/gamma_correction_title"
+            android:persistent="false"
+            android:fragment="com.android.settings.display.GammaCorrectionSettings"
+            settings:controller="com.android.settings.display.GammaCorrectionPreferenceController"/>
+
         <SwitchPreferenceCompat
             android:key="even_dimmer_activated"
             android:title="@string/even_dimmer_display_title"
@@ -93,6 +100,13 @@
             android:persistent="false"
             android:title="@string/accessibility_text_reading_options_title"
             settings:controller="com.android.settings.accessibility.TextReadingFragmentForDisplaySettingsController"/>
+
+        <Preference
+            android:key="screen_resolution"
+            android:title="@string/display_resolution_title"
+            android:fragment="com.android.settings.display.ScreenResolutionFragment"
+            settings:keywords="@string/keywords_screen_resolution"
+            settings:controller="com.android.settings.display.ScreenResolutionController"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -156,13 +170,6 @@
             settings:replacesKey="auto_rotate"
             settings:requiresConfig="@*lineageos.platform:bool/config_enableAdvancedRotationSettings"
             settings:requiresFeature="android.hardware.sensor.accelerometer" />
-
-        <Preference
-            android:key="screen_resolution"
-            android:title="@string/screen_resolution_title"
-            android:fragment="com.android.settings.display.ScreenResolutionFragment"
-            settings:keywords="@string/keywords_screen_resolution"
-            settings:controller="com.android.settings.display.ScreenResolutionController"/>
 
         <SwitchPreferenceCompat
             android:key="display_white_balance"
