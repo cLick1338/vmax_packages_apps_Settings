@@ -40,7 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.IntConsumer;
 
-/** Draft calibration editor with a window-local brightness override and daemon-owned bypass. */
+/** Draft calibration editor with a window-local brightness override and daemon-owned live preview. */
 public class GammaCalibrationSettings extends SettingsPreferenceFragment {
     private static final String TAG = "GammaCalibration";
     private static final int IMPORT = 1;
@@ -67,6 +67,10 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
     private boolean mLoaded;
     private boolean mDirty;
     private boolean mReady;
+    private int mPreviewValue = Integer.MIN_VALUE;
+    private volatile int mPreviewRequest;
+    private boolean mPreviewConfirmed;
+    private boolean mHasPreview;
     private boolean mHasBrightness;
     private boolean mDragging;
     private boolean mAdjusted;
@@ -180,6 +184,9 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
         mPreviousBrightness = requireActivity().getWindow().getAttributes().screenBrightness;
         GammaCalibrationSession session = new GammaCalibrationSession();
         mSession = session;
+        mPreviewValue = Integer.MIN_VALUE;
+        mPreviewConfirmed = false;
+        mHasPreview = false;
         mIo.execute(() -> {
             try {
                 int[] status = session.connect();
@@ -260,7 +267,7 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
     @Override
     public void onPause() {
         mReady = false;
-        // Do not show corrected patches while waiting for a new session on return.
+        // Hide the patches until the new session has applied the draft preview on return.
         if (mPattern != null) refreshControls();
         GammaCalibrationSession session = mSession;
         mSession = null;
@@ -333,9 +340,13 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
         int percent = Math.max(0, Math.min(100, Math.round(raw * 100f / mMax)));
         if (raw != mRaw) {
             mRaw = raw;
+            boolean keepAdjustment = mAdjusted && percent == mPercent;
             mPercent = percent;
-            mAdjusted = false;
-            selectValue(raw);
+            // Do not overwrite a value adjusted while the panel brightness was settling.
+            if (!keepAdjustment) {
+                mAdjusted = false;
+                selectValue(raw);
+            }
             if (mRestoreAdjusted) {
                 mValue = mRestoreValue;
                 mAdjusted = true;
@@ -355,8 +366,32 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
         refreshControls();
     }
 
+    private void requestPreview() {
+        GammaCalibrationSession session = mSession;
+        int value = mValue;
+        mPreviewValue = value;
+        mPreviewConfirmed = false;
+        int request = ++mPreviewRequest;
+        mIo.execute(() -> {
+            // Coalesce rapid taps instead of applying obsolete values queued behind I/O.
+            if (request != mPreviewRequest) return;
+            try {
+                session.preview(value);
+                mHandler.post(() -> {
+                    if (mSession != session || request != mPreviewRequest) return;
+                    mPreviewConfirmed = true;
+                    mHasPreview = true;
+                    refreshControls();
+                });
+            } catch (IOException e) {
+                sessionFailed(session, e);
+            }
+        });
+    }
+
     private void refreshControls() {
         if (mPattern == null) return;
+        if (mReady && mPreviewValue != mValue) requestPreview();
         int[] controls = {R.id.calibration_percent, R.id.calibration_brightness,
                 R.id.calibration_brightness_minus, R.id.calibration_brightness_plus,
                 R.id.calibration_value, R.id.calibration_value_minus, R.id.calibration_value_plus};
@@ -367,9 +402,8 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
         mValueLabel.setContentDescription(getString(
                 R.string.gamma_calibration_value_description, mValue));
         if (!mDragging) mBrightness.setProgress(mPercent);
-        mPattern.setGray(mValue);
-        mPattern.setVisibility(mReady ? View.VISIBLE : View.INVISIBLE);
-        mAdd.setEnabled(mReady && !mDragging && mRaw >= 0
+        mPattern.setVisibility(mReady && mHasPreview ? View.VISIBLE : View.INVISIBLE);
+        mAdd.setEnabled(mReady && mPreviewConfirmed && !mDragging && mRaw >= 0
                 && SystemClock.uptimeMillis() >= mSettleUntil);
         mAdd.setText(mPoints.containsKey(mPercent)
                 ? R.string.gamma_calibration_update : R.string.gamma_calibration_add);
@@ -416,7 +450,7 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
     private void draftChanged() {
         mDirty = true;
         mAdjusted = false;
-        selectValue(Math.max(0, mRaw));
+        selectValue(mRaw >= 0 ? mRaw : mExpectedRaw);
         refreshPoints();
         refreshControls();
     }

@@ -9,20 +9,14 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
-/** Exact RGB checkerboard; unaffected by automatic dark styling. */
+/** Fixed RGB 0/1 checkerboard; the daemon previews correction on the actual panel. */
 public class GammaCalibrationPattern extends View {
     private final Paint mPaint = new Paint();
-    private int mGray;
 
     public GammaCalibrationPattern(Context context, AttributeSet attrs) {
         super(context, attrs);
         setForceDarkAllowed(false);
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-    }
-
-    public void setGray(int value) {
-        mGray = Math.min(255, Math.abs(value));
-        invalidate();
     }
 
     @Override
@@ -37,7 +31,7 @@ public class GammaCalibrationPattern extends View {
         float side = getWidth() / 5f;
         mPaint.setShader(null);
         for (int i = 0; i < 10; i++) {
-            mPaint.setColor(i % 2 == 0 ? Color.BLACK : Color.rgb(mGray, mGray, mGray));
+            mPaint.setColor(i % 2 == 0 ? Color.BLACK : Color.rgb(1, 1, 1));
             int column = i % 5;
             int row = i / 5;
             canvas.drawRect(column * side, row * side,

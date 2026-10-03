@@ -2890,8 +2890,8 @@
     <string name="gamma_calibration_default">Default</string>
     <string name="gamma_calibration_custom">Custom</string>
     <string name="gamma_calibration_unavailable">Unavailable</string>
-    <string name="gamma_calibration_instructions">Calibration is temporarily off on this screen. Choose a brightness level then adjust \"Calibration value\" until the squares become barely visible then add the point. Repeat at different brightness levels. Avoid adding too many calibration points or multiple of the same value, the correction smoothly interpolates between them. You can tap on points in the list to edit or remove them.</string>
-    <string name="gamma_calibration_pattern_description">Black and adjustable gray checkerboard</string>
+    <string name="gamma_calibration_instructions">Changes are temporarily previewed on this screen. Choose a brightness level then adjust \"Calibration value\" until the gray squares become barely visible against the black squares, then add the point. If the squares are already visible with a value of 0, no correction is needed at that brightness: add a point with a value of 0. Repeat at different brightness levels. Avoid adding too many calibration points or multiple of the same value, the correction smoothly interpolates between them. You can tap on points in the list to edit or remove them. Save to keep your calibration.</string>
+    <string name="gamma_calibration_pattern_description">Checkerboard of RGB 0 black and RGB 1 gray squares</string>
     <string name="gamma_calibration_brightness">Display brightness (real panel percentage)</string>
     <string name="gamma_calibration_brightness_less">Decrease brightness</string>
     <string name="gamma_calibration_brightness_more">Increase brightness</string>
@@ -2907,7 +2907,7 @@
     <string name="gamma_calibration_saved_point">Saved point</string>
     <string name="gamma_calibration_interpolated">Interpolated</string>
     <string name="gamma_calibration_adjusted">Adjusted — add or update this point to keep it</string>
-    <string name="gamma_calibration_negative">Negative correction; checkerboard shows its magnitude</string>
+    <string name="gamma_calibration_negative">Negative correction; dark tones are reduced in the live preview</string>
     <string name="gamma_calibration_save">Save</string>
     <string name="gamma_calibration_import">Import calibration</string>
     <string name="gamma_calibration_export">Export calibration</string>
