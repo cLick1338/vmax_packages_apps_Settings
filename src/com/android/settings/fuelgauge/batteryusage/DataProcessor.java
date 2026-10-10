@@ -904,6 +904,32 @@ public final class DataProcessor {
             @NonNull final Set<String> systemAppsPackageNames,
             @NonNull final Set<Integer> systemAppsUids) {
         Map<Long, BatteryDiffData> batteryDiffDataMap = new ArrayMap<>(1);
+        final long lastFullChargeTime = DatabaseUtils.getLastFullChargeTime(context);
+        final List<BatteryEvent> fullChargeEvents =
+                DatabaseUtils.getBatteryEvents(
+                        context, Calendar.getInstance(), lastFullChargeTime,
+                        List.of(BatteryEventType.FULL_CHARGED));
+        for (BatteryEvent event : fullChargeEvents) {
+            if (event.getTimestamp() != lastFullChargeTime || event.getBatteryLevel() >= 100) {
+                continue;
+            }
+            // Use the saved capped-charge snapshot, not cumulative stats from earlier cycles.
+            final Map<Integer, Map<Integer, BatteryDiffData>> usageMap =
+                    getBatteryUsageData(
+                            context, userIdsSeries,
+                            DatabaseUtils.getHistoryMapSinceLastFullCharge(
+                                    context, Calendar.getInstance()));
+            final BatteryDiffData cappedUsage = usageMap == null ? null
+                    : usageMap.get(SELECTED_INDEX_ALL).get(SELECTED_INDEX_ALL);
+            batteryDiffDataMap.put(
+                    lastFullChargeTime,
+                    cappedUsage != null ? cappedUsage : new BatteryDiffData(
+                            context, lastFullChargeTime, getCurrentTimeMillis(),
+                            event.getBatteryLevel(), getCurrentLevel(context),
+                            /* screenOnTime= */ 0L, new ArrayList<>(), new ArrayList<>(),
+                            systemAppsPackageNames, systemAppsUids, /* isAccumulated= */ false));
+            return batteryDiffDataMap;
+        }
         batteryDiffDataMap.put(
                 startTimestamp,
                 generateBatteryDiffData(

@@ -45,15 +45,27 @@ public final class BatteryUsageDataLoader {
     private BatteryUsageDataLoader() {}
 
     static void enqueueWork(final Context context, final boolean isFullChargeStart) {
+        enqueueWork(context, isFullChargeStart, 100);
+    }
+
+    static void enqueueWork(
+            final Context context, final boolean isFullChargeStart, final int fullChargeLevel) {
         AsyncTask.execute(
                 () -> {
                     Log.d(TAG, "loadUsageDataSafely() in the AsyncTask");
-                    loadUsageDataSafely(context.getApplicationContext(), isFullChargeStart);
+                    loadUsageDataSafely(
+                            context.getApplicationContext(), isFullChargeStart, fullChargeLevel);
                 });
     }
 
     @VisibleForTesting
     static void loadBatteryStatsData(final Context context, final boolean isFullChargeStart) {
+        loadBatteryStatsData(context, isFullChargeStart, 100);
+    }
+
+    @VisibleForTesting
+    static void loadBatteryStatsData(
+            final Context context, final boolean isFullChargeStart, final int fullChargeLevel) {
         BatteryUsageLogUtils.writeLog(context, Action.FETCH_USAGE_DATA, "");
         final long currentTime = System.currentTimeMillis();
         final BatteryUsageStats batteryUsageStats = DataProcessor.getBatteryUsageStats(context);
@@ -72,7 +84,7 @@ public final class BatteryUsageDataLoader {
             DatabaseUtils.sendBatteryEventData(
                     context,
                     ConvertUtils.convertToBatteryEvent(
-                            currentTime, BatteryEventType.FULL_CHARGED, 100));
+                            currentTime, BatteryEventType.FULL_CHARGED, fullChargeLevel));
             DatabaseUtils.removeDismissedPowerAnomalyKeys(context);
         }
 
@@ -159,10 +171,10 @@ public final class BatteryUsageDataLoader {
     }
 
     private static void loadUsageDataSafely(
-            final Context context, final boolean isFullChargeStart) {
+            final Context context, final boolean isFullChargeStart, final int fullChargeLevel) {
         try {
             final long start = System.currentTimeMillis();
-            loadBatteryStatsData(context, isFullChargeStart);
+            loadBatteryStatsData(context, isFullChargeStart, fullChargeLevel);
             AppOptModeSharedPreferencesUtils.resetExpiredAppOptModeBeforeTimestamp(
                     context, System.currentTimeMillis());
             if (!isFullChargeStart) {

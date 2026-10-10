@@ -49,6 +49,9 @@ public final class BatteryUsageBroadcastReceiver extends BroadcastReceiver {
     public static final String ACTION_BATTERY_UNPLUGGING =
             "com.android.settings.battery.action.ACTION_BATTERY_UNPLUGGING";
 
+    private static final String ACTION_CHARGING_LIMIT_REACHED =
+            "lineageos.intent.action.CHARGING_LIMIT_REACHED";
+
     @VisibleForTesting static long sBroadcastDelayFromBoot = Duration.ofMinutes(40).toMillis();
     @VisibleForTesting static boolean sIsDebugMode = Build.TYPE.equals("userdebug");
 
@@ -131,8 +134,26 @@ public final class BatteryUsageBroadcastReceiver extends BroadcastReceiver {
         }
 
         mFetchBatteryUsageData = true;
-        BatteryUsageDataLoader.enqueueWork(context, /* isFullChargeStart= */ true);
+        BatteryUsageDataLoader.enqueueWork(
+                context, /* isFullChargeStart= */ true, BatteryStatus.getBatteryLevel(batteryIntent));
         BootBroadcastReceiver.invokeJobRecheck(context);
+    }
+
+    public static final class ChargingLimitReachedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || !ACTION_CHARGING_LIMIT_REACHED.equals(intent.getAction())
+                    || com.android.settingslib.fuelgauge.BatteryUtils.isAdditionalProfile(context)) {
+                return;
+            }
+            final int level = BatteryStatus.getBatteryLevel(intent);
+            if (level <= 0 || level > 100) {
+                return;
+            }
+            DatabaseUtils.recordDateTime(context, ACTION_CHARGING_LIMIT_REACHED);
+            BatteryUsageDataLoader.enqueueWork(context, /* isFullChargeStart= */ true, level);
+            BootBroadcastReceiver.invokeJobRecheck(context);
+        }
     }
 
     private void sendBatteryEventData(Context context, BatteryEventType batteryEventType) {

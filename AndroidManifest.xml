@@ -3478,6 +3478,15 @@
             android:exported="false"
             android:authorities="${applicationId}.battery.usage.bugreport"/>
 
+        <receiver
+            android:name=".fuelgauge.batteryusage.BatteryUsageBroadcastReceiver$ChargingLimitReachedReceiver"
+            android:exported="true"
+            android:permission="android.permission.BATTERY_STATS">
+            <intent-filter>
+                <action android:name="lineageos.intent.action.CHARGING_LIMIT_REACHED"/>
+            </intent-filter>
+        </receiver>
+
         <receiver android:name="com.android.settings.fuelgauge.batteryusage.BatteryUsageBroadcastReceiver"
                   android:exported="true">
             <intent-filter>
