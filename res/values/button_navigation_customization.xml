@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vmax -->
+<resources>
+    <string name="button_navigation_height_title">Navigation bar height</string>
+    <string name="button_navigation_height_value">%1$d%%</string>
+    <string name="button_navigation_icon_color_title">Button icon color</string>
+    <string name="button_navigation_color_automatic">Automatic</string>
+    <string name="button_navigation_color_red">Red</string>
+    <string name="button_navigation_color_green">Green</string>
+    <string name="button_navigation_color_blue">Blue</string>
+    <string name="button_navigation_color_rgb">RGB: %1$d, %2$d, %3$d</string>
+    <string name="button_navigation_color_channel_value">%1$s: %2$d</string>
+    <string name="button_navigation_color_apply">Apply</string>
+</resources>

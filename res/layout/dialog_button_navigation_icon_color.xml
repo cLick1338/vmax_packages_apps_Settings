@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vmax -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+
+        <View
+            android:id="@+id/button_navigation_color_preview"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/button_navigation_red_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceListItem" />
+
+        <SeekBar
+            android:id="@+id/button_navigation_red"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="255"
+            android:contentDescription="@string/button_navigation_color_red"
+            android:paddingVertical="12dp" />
+
+        <TextView
+            android:id="@+id/button_navigation_green_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceListItem" />
+
+        <SeekBar
+            android:id="@+id/button_navigation_green"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="255"
+            android:contentDescription="@string/button_navigation_color_green"
+            android:paddingVertical="12dp" />
+
+        <TextView
+            android:id="@+id/button_navigation_blue_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceListItem" />
+
+        <SeekBar
+            android:id="@+id/button_navigation_blue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="255"
+            android:contentDescription="@string/button_navigation_color_blue"
+            android:paddingVertical="12dp" />
+    </LinearLayout>
+</ScrollView>

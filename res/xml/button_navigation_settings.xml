@@ -21,6 +21,21 @@
     android:title="@string/button_navigation_settings_activity_title"
     settings:keywords="@string/keywords_button_navigation_settings">
 
+    <com.android.settings.gestures.ButtonNavigationHeightPreference
+        android:key="button_navigation_height"
+        android:title="@string/button_navigation_height_title"
+        android:min="50"
+        android:max="150"
+        android:defaultValue="100"
+        android:persistent="false"
+        settings:controller="com.android.settings.gestures.ButtonNavigationHeightPreferenceController" />
+
+    <com.android.settings.gestures.ButtonNavigationIconColorPreference
+        android:key="button_navigation_icon_color"
+        android:title="@string/button_navigation_icon_color_title"
+        android:persistent="false"
+        settings:controller="com.android.settings.gestures.ButtonNavigationIconColorPreferenceController" />
+
     <!-- Animation uses embedded PNGs and lottie requires asset folder to be set despite
      embedding. -->
     <com.android.settingslib.widget.IllustrationPreference
