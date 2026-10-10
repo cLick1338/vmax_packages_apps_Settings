@@ -13199,6 +13199,12 @@
     <string name="category_name_brightness">Brightness</string>
     <!-- Lock screen category name in Display Settings [CHAR LIMIT=none] -->
     <string name="category_name_lock_display">Lock display</string>
+    <string name="screen_off_animation_title">Screen off animation</string>
+    <string name="screen_off_animation_off">Off</string>
+    <string name="screen_off_animation_fade">Fade</string>
+    <string name="screen_off_animation_crt">CRT</string>
+    <string name="screen_off_animation_speed_title">Animation speed</string>
+    <string name="screen_off_animation_speed_value">%1$d.%2$d×</string>
     <!-- Appearance category name in Display Settings [CHAR LIMIT=none] -->
     <string name="category_name_appearance">Appearance</string>
     <!-- Color category name in Display Settings [CHAR LIMIT=none] -->

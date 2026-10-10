@@ -19,9 +19,12 @@ package com.android.settings;
 import android.app.settings.SettingsEnums;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.UserHandle;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.Preference;
 
 import com.android.settings.dashboard.DashboardFragment;
 import com.android.settings.display.BrightnessLevelPreferenceController;
@@ -49,6 +52,11 @@ public class DisplaySettings extends DashboardFragment {
     private static final String KEY_HIGH_TOUCH_POLLING_RATE = "high_touch_polling_rate_enable";
     private static final String KEY_HIGH_TOUCH_SENSITIVITY = "high_touch_sensitivity_enable";
     private static final String KEY_PROXIMITY_ON_WAKE = "proximity_on_wake";
+    private static final String KEY_SCREEN_OFF_ANIMATION = "screen_off_animation";
+
+    private static final int SCREEN_OFF_ANIMATION_FADE = 0;
+    private static final int SCREEN_OFF_ANIMATION_CRT = 1;
+    private static final int SCREEN_OFF_ANIMATION_OFF = 2;
 
     @Override
     public int getMetricsCategory() {
@@ -68,6 +76,32 @@ public class DisplaySettings extends DashboardFragment {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        final Preference preference = findPreference(KEY_SCREEN_OFF_ANIMATION);
+        if (preference == null) {
+            return;
+        }
+
+        final int animation = Settings.System.getIntForUser(getContext().getContentResolver(),
+                Settings.System.SCREEN_OFF_ANIMATION, SCREEN_OFF_ANIMATION_FADE,
+                UserHandle.USER_CURRENT);
+        final int summaryRes;
+        switch (animation) {
+            case SCREEN_OFF_ANIMATION_OFF:
+                summaryRes = R.string.screen_off_animation_off;
+                break;
+            case SCREEN_OFF_ANIMATION_CRT:
+                summaryRes = R.string.screen_off_animation_crt;
+                break;
+            default:
+                summaryRes = R.string.screen_off_animation_fade;
+                break;
+        }
+        preference.setSummary(summaryRes);
     }
 
     @Override

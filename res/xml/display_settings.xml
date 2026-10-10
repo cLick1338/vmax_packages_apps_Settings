@@ -79,6 +79,11 @@
             android:summary="@string/summary_placeholder"
             android:fragment="com.android.settings.display.ScreenTimeoutSettings"
             settings:controller="com.android.settings.display.ScreenTimeoutPreferenceController"/>
+
+        <Preference
+            android:key="screen_off_animation"
+            android:title="@string/screen_off_animation_title"
+            android:fragment="com.android.settings.display.ScreenOffAnimationSettingsFragment"/>
     </PreferenceCategory>
 
     <PreferenceCategory
