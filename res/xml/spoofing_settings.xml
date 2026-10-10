@@ -1,0 +1,21 @@
+<!-- Vmax -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/spoofing_settings_title">
+
+    <lineageos.preference.SecureSettingSwitchPreference
+        android:key="spoofing_rom_hide"
+        android:title="@string/spoofing_rom_hide_title"
+        android:summary="@string/spoofing_rom_hide_summary"
+        android:defaultValue="true" />
+
+    <Preference
+        android:key="hide_developer_status"
+        android:title="@string/hide_developer_status_title"
+        android:summary="@string/hide_developer_status_summary"
+        android:fragment="com.android.settings.spoofing.HideDeveloperStatusSettings" />
+
+    <com.android.settingslib.widget.FooterPreference
+        android:key="spoofing_footer"
+        android:title="@string/spoofing_footer"
+        android:selectable="false" />
+</PreferenceScreen>

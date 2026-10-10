@@ -62,6 +62,14 @@
         android:fragment="com.android.settings.datetime.DateTimeSettings"
         settings:controller="com.android.settings.datetime.DateTimePreferenceController"/>
 
+    <Preference
+        android:key="spoofing_settings"
+        android:title="@string/spoofing_settings_title"
+        android:summary="@string/spoofing_settings_summary"
+        android:icon="@drawable/ic_settings_security"
+        android:order="-60"
+        android:fragment="com.android.settings.spoofing.SpoofingSettings" />
+
     <!-- System updates -->
     <Preference
         android:key="additional_system_update_settings"
