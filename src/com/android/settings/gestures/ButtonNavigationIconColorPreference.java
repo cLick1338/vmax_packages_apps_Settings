@@ -77,6 +77,17 @@ public class ButtonNavigationIconColorPreference extends CustomDialogPreferenceC
         for (int i = 0; i < mChannels.length; i++) {
             mChannels[i].setProgress(values[i]);
         }
+        int[] minusIds = {R.id.button_navigation_red_minus, R.id.button_navigation_green_minus,
+                R.id.button_navigation_blue_minus};
+        int[] plusIds = {R.id.button_navigation_red_plus, R.id.button_navigation_green_plus,
+                R.id.button_navigation_blue_plus};
+        for (int i = 0; i < mChannels.length; i++) {
+            SeekBar channel = mChannels[i];
+            view.findViewById(minusIds[i]).setOnClickListener(
+                    v -> channel.setProgress(channel.getProgress() - 1));
+            view.findViewById(plusIds[i]).setOnClickListener(
+                    v -> channel.setProgress(channel.getProgress() + 1));
+        }
         for (SeekBar channel : mChannels) {
             channel.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
