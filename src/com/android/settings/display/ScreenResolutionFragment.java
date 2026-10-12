@@ -28,6 +28,7 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
+import android.view.IWindowManager;
 import android.view.WindowManagerGlobal;
 import android.widget.Toast;
 
@@ -53,6 +54,9 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment
     private static final String SCREEN_RESOLUTION_KEY = "screen_resolution";
     // Shared with vmaxdisplay's boot restore and CLI. Use Global so all users share one panel mode.
     private static final String SAVED_RESOLUTION = "user_selected_resolution";
+    // "<base milli-dpi at the base width> <last applied dpi> <last applied width>", shared with
+    // vmaxdisplay. Scaling from the base avoids rounding drift across switches.
+    private static final String SAVED_DENSITY = "user_selected_density";
 
     private DisplayManager mDisplayManager;
     private Display mDefaultDisplay;
@@ -155,11 +159,60 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment
                 R.integer.config_screenResolutionBaseWidth);
         final int baseDensity = getContext().getResources().getInteger(
                 R.integer.config_screenResolutionBaseDensity);
-        if (baseWidth > 0 && baseDensity > 0) {
-            final int density = (baseDensity * width + baseWidth / 2) / baseWidth;
-            WindowManagerGlobal.getWindowManagerService().setForcedDisplayDensityForUser(
-                    Display.DEFAULT_DISPLAY, density, UserHandle.myUserId());
+        if (baseWidth <= 0 || baseDensity <= 0) {
+            return;
         }
+        final IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
+        final int current = wm.getBaseDisplayDensity(Display.DEFAULT_DISPLAY);
+        final long[] state = loadDensityState();
+        final long base;
+        if (state != null && (current <= 0 || current == state[1])) {
+            base = state[0];
+        } else if (state != null) {
+            // wm density no longer matches what was applied: the user changed it at that width.
+            base = baseFromDensity(current, (int) state[2], baseWidth);
+        } else if (current > 0 && getDisplayMode().getPhysicalWidth() > 0) {
+            base = baseFromDensity(current, getDisplayMode().getPhysicalWidth(), baseWidth);
+        } else {
+            base = baseDensity * 1000L;
+        }
+        final int density = densityForWidth(base, width, baseWidth);
+        wm.setForcedDisplayDensityForUser(
+                Display.DEFAULT_DISPLAY, density, UserHandle.myUserId());
+        Settings.Global.putString(getContext().getContentResolver(), SAVED_DENSITY,
+                base + " " + density + " " + width);
+    }
+
+    @VisibleForTesting
+    static int densityForWidth(long baseMilli, int width, int baseWidth) {
+        final long unit = baseWidth * 1000L;
+        return (int) ((baseMilli * width + unit / 2) / unit);
+    }
+
+    @VisibleForTesting
+    static long baseFromDensity(int density, int width, int baseWidth) {
+        return ((long) density * baseWidth * 1000L + width / 2) / width;
+    }
+
+    private long[] loadDensityState() {
+        final String value = Settings.Global.getString(getContext().getContentResolver(),
+                SAVED_DENSITY);
+        if (value == null) {
+            return null;
+        }
+        final String[] parts = value.split(" ");
+        try {
+            if (parts.length == 3) {
+                final long[] state = {Long.parseLong(parts[0]), Long.parseLong(parts[1]),
+                        Long.parseLong(parts[2])};
+                if (state[0] > 0 && state[1] > 0 && state[2] > 0) {
+                    return state;
+                }
+            }
+        } catch (NumberFormatException e) {
+            // Fall through: treated as no saved state.
+        }
+        return null;
     }
 
     @VisibleForTesting

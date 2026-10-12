@@ -112,4 +112,22 @@ public class ScreenResolutionFragmentTest {
         verify(mFragment).saveResolution("1440x2880");
         verify(mDisplay, never()).setUserPreferredDisplayMode(any());
     }
+
+    @Test
+    public void density_scalesFromBaseWithoutDriftAcrossSwitches() {
+        // 450 dpi at QHD: 337.5 at FHD rounds up, yet returning to QHD must give 450 again.
+        final long base = ScreenResolutionFragment.baseFromDensity(450, 1440, 1440);
+        int density = 0;
+        for (int i = 0; i < 10; i++) {
+            density = ScreenResolutionFragment.densityForWidth(base, 1080, 1440);
+            assertThat(density).isEqualTo(338);
+            density = ScreenResolutionFragment.densityForWidth(base, 720, 1440);
+            assertThat(density).isEqualTo(225);
+            density = ScreenResolutionFragment.densityForWidth(base, 1440, 1440);
+            assertThat(density).isEqualTo(450);
+        }
+        // A user density picked at FHD becomes a base that reproduces itself there.
+        final long fromFhd = ScreenResolutionFragment.baseFromDensity(338, 1080, 1440);
+        assertThat(ScreenResolutionFragment.densityForWidth(fromFhd, 1080, 1440)).isEqualTo(338);
+    }
 }
