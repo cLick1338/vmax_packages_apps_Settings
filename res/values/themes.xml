@@ -117,7 +117,7 @@
         <item name="android:windowSoftInputMode">adjustResize</item>
     </style>
 
-    <style name="Theme.AlertDialog" parent="@style/Theme.AppCompat.DayNight.Dialog.Alert">
+    <style name="Theme.AlertDialog" parent="@style/Theme.AlertDialog.SettingsLib">
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="android:clipToPadding">true</item>
         <item name="android:clipChildren">true</item>
