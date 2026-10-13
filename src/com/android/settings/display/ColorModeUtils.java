@@ -23,7 +23,9 @@ import static android.hardware.display.ColorDisplayManager.COLOR_MODE_SATURATED;
 import static android.hardware.display.ColorDisplayManager.VENDOR_COLOR_MODE_RANGE_MAX;
 import static android.hardware.display.ColorDisplayManager.VENDOR_COLOR_MODE_RANGE_MIN;
 
+import android.content.Context;
 import android.content.res.Resources;
+import android.provider.Settings;
 import android.util.ArrayMap;
 
 import com.android.settings.R;
@@ -31,6 +33,30 @@ import com.android.settings.R;
 import java.util.Map;
 
 final class ColorModeUtils {
+
+    // Vmax: read by HdrBrightnessModifier in services
+    static final String KEY_HDR_BRIGHTNESS_BOOST = "hdr_brightness_boost";
+
+    // Vmax: vendor mode the HWC keeps on the DCI-P3 panel mode (ro.vendor.display.panel_mode.unmanaged_p3)
+    static final int COLOR_MODE_UNMANAGED_P3 = 256;
+
+    static boolean isHdrBoostEnabled(Context context) {
+        return Settings.Global.getInt(context.getContentResolver(),
+                KEY_HDR_BRIGHTNESS_BOOST, 1) != 0;
+    }
+
+    static int getColorModeSummaryRes(int colorMode) {
+        switch (colorMode) {
+            case COLOR_MODE_NATURAL:
+                return R.string.color_management_mode_natural_summary;
+            case COLOR_MODE_UNMANAGED_P3:
+                return R.string.color_management_mode_unmanaged_p3_summary;
+            case COLOR_MODE_SATURATED:
+                return R.string.color_management_mode_saturated_summary;
+            default:
+                return 0;
+        }
+    }
 
     private ColorModeUtils() {
         // Do not instantiate.

@@ -1,0 +1,18 @@
+<!-- Vmax -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- No translations on purpose: every locale, including all en-* variants, uses these -->
+    <string name="color_management_title" translatable="false">Colour management &amp; HDR</string>
+    <string name="color_management_summary" translatable="false"><xliff:g id="mode">%1$s</xliff:g> · <xliff:g id="hdr">%2$s</xliff:g></string>
+
+    <string name="color_management_mode_natural" translatable="false">Managed (accurate)</string>
+    <string name="color_management_mode_natural_summary" translatable="false">The panel automatically displays sRGB, DCI-P3, HDR10 content</string>
+    <string name="color_management_mode_unmanaged_p3" translatable="false">Unmanaged (DCI-P3)</string>
+    <string name="color_management_mode_unmanaged_p3_summary" translatable="false">DCI-P3 (D65) without conversion, sRGB content will look oversaturated</string>
+    <string name="color_management_mode_saturated" translatable="false">Unmanaged (native gamut)</string>
+    <string name="color_management_mode_saturated_summary" translatable="false">Native gamut and native white point (7500K), most content will look inaccurate</string>
+
+    <string name="color_management_hdr_boost_title" translatable="false">Boost brightness for HDR</string>
+    <string name="color_management_hdr_boost_summary" translatable="false">Automatically raise panel brightness while HDR10 content is displayed.</string>
+    <string name="color_management_hdr_boost_on" translatable="false">HDR boost on</string>
+    <string name="color_management_hdr_boost_off" translatable="false">HDR boost off</string>
+</resources>

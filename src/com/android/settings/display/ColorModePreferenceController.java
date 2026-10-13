@@ -18,6 +18,7 @@ import android.hardware.display.ColorDisplayManager;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.settings.R;
 import com.android.settings.core.BasePreferenceController;
 
 public class ColorModePreferenceController extends BasePreferenceController {
@@ -39,7 +40,11 @@ public class ColorModePreferenceController extends BasePreferenceController {
 
     @Override
     public CharSequence getSummary() {
-        return ColorModeUtils.getColorModeMapping(mContext.getResources()).get(getColorMode());
+        return mContext.getString(R.string.color_management_summary,
+                ColorModeUtils.getColorModeMapping(mContext.getResources()).get(getColorMode()),
+                mContext.getString(ColorModeUtils.isHdrBoostEnabled(mContext)
+                        ? R.string.color_management_hdr_boost_on
+                        : R.string.color_management_hdr_boost_off));
     }
 
     @VisibleForTesting

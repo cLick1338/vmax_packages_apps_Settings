@@ -31,6 +31,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.SwitchPreferenceCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -47,6 +49,7 @@ import com.android.settings.widget.RadioButtonPickerFragment;
 import com.android.settingslib.search.SearchIndexable;
 import com.android.settingslib.widget.CandidateInfo;
 import com.android.settingslib.widget.LayoutPreference;
+import com.android.settingslib.widget.SelectorWithWidgetPreference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -221,6 +224,32 @@ public class ColorModePreferenceFragment extends RadioButtonPickerFragment {
                     true /* enabled */));
         }
         return candidates;
+    }
+
+    @Override
+    public void bindPreferenceExtra(SelectorWithWidgetPreference pref,
+            String key, CandidateInfo info, String defaultKey, String systemDefaultKey) {
+        final int summary = ColorModeUtils.getColorModeSummaryRes(
+                Integer.parseInt(key.substring(key.lastIndexOf("_") + 1)));
+        if (summary != 0) {
+            pref.setSummary(summary);
+        }
+    }
+
+    @Override
+    public void updateCandidates() {
+        super.updateCandidates();
+        // Vmax: HDR brightness boost switch below the modes
+        final SwitchPreferenceCompat hdrBoost = new SwitchPreferenceCompat(getPrefContext());
+        hdrBoost.setKey(ColorModeUtils.KEY_HDR_BRIGHTNESS_BOOST);
+        hdrBoost.setPersistent(false);
+        hdrBoost.setTitle(R.string.color_management_hdr_boost_title);
+        hdrBoost.setSummary(R.string.color_management_hdr_boost_summary);
+        hdrBoost.setChecked(ColorModeUtils.isHdrBoostEnabled(getContext()));
+        hdrBoost.setOnPreferenceChangeListener((p, v) -> Settings.Global.putInt(
+                getContext().getContentResolver(), ColorModeUtils.KEY_HDR_BRIGHTNESS_BOOST,
+                (Boolean) v ? 1 : 0));
+        getPreferenceScreen().addPreference(hdrBoost);
     }
 
     @Override
