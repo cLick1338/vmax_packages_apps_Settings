@@ -16,18 +16,18 @@
 
 package com.android.settings.development;
 
-import static com.android.settings.development.WindowAnimationScalePreferenceController.DEFAULT_VALUE;
 import static com.android.settings.development.WindowAnimationScalePreferenceController.WINDOW_ANIMATION_SCALE_SELECTOR;
+import static com.android.settings.development.WindowAnimationScalePreferenceController.DEFAULT_VALUE;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.RemoteException;
 import android.view.IWindowManager;
 
-import androidx.preference.ListPreference;
 import androidx.preference.PreferenceScreen;
 
 import org.junit.Before;
@@ -43,23 +43,12 @@ import org.robolectric.util.ReflectionHelpers;
 public class WindowAnimationScalePreferenceControllerTest {
 
     @Mock
-    private ListPreference mPreference;
+    private AnimationScalePreference mPreference;
     @Mock
     private PreferenceScreen mScreen;
     @Mock
     private IWindowManager mWindowManager;
 
-    /**
-     * 0: Animation off
-     * 1: Animation scale .5x
-     * 2: Animation scale 1x
-     * 3: Animation scale 1.5x
-     * 4: Animation scale 2x
-     * 5: Animation scale 5x
-     * 6: Animation scale 10x
-     */
-    private String[] mListValues;
-    private String[] mListSummaries;
     private Context mContext;
     private WindowAnimationScalePreferenceController mController;
 
@@ -67,11 +56,6 @@ public class WindowAnimationScalePreferenceControllerTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;
-        final Resources resources = mContext.getResources();
-        mListValues = resources.getStringArray(
-                com.android.settingslib.R.array.window_animation_scale_values);
-        mListSummaries = resources.getStringArray(
-                com.android.settingslib.R.array.window_animation_scale_entries);
         mController = new WindowAnimationScalePreferenceController(mContext);
         ReflectionHelpers.setField(mController, "mWindowManager", mWindowManager);
         when(mScreen.findPreference(mController.getPreferenceKey())).thenReturn(mPreference);
@@ -79,44 +63,49 @@ public class WindowAnimationScalePreferenceControllerTest {
     }
 
     @Test
-    public void onPreferenceChange_noValueSet_shouldSetDefault() throws RemoteException {
-        mController.onPreferenceChange(mPreference, null /* new value */);
+    public void onPreferenceChange_fractionalStep_shouldSetExactScale() throws RemoteException {
+        assertThat(mController.onPreferenceChange(mPreference, 17)).isTrue();
 
-        verify(mWindowManager).setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, DEFAULT_VALUE);
+        verify(mWindowManager).setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, 0.85f);
     }
 
     @Test
-    public void onPreferenceChange_option5Selected_shouldSetOption5() throws RemoteException {
-        mController.onPreferenceChange(mPreference, mListValues[5]);
+    public void onPreferenceChange_endpoints_shouldSetZeroAndTwo() throws RemoteException {
+        assertThat(mController.onPreferenceChange(mPreference, 0)).isTrue();
+        assertThat(mController.onPreferenceChange(mPreference, 40)).isTrue();
 
-        verify(mWindowManager).setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR,
-                Float.valueOf(mListValues[5]));
+        verify(mWindowManager).setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, 0f);
+        verify(mWindowManager).setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, 2f);
     }
 
     @Test
-    public void updateState_option5Set_shouldUpdatePreferenceToOption5() throws RemoteException {
-        when(mWindowManager.getAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR))
-            .thenReturn(Float.valueOf(mListValues[5]));
+    public void onPreferenceChange_invalidProgress_shouldReject() throws RemoteException {
+        assertThat(mController.onPreferenceChange(mPreference, -1)).isFalse();
+        assertThat(mController.onPreferenceChange(mPreference, 41)).isFalse();
+        assertThat(mController.onPreferenceChange(mPreference, null)).isFalse();
+
+        verifyNoInteractions(mWindowManager);
+    }
+
+    @Test
+    public void onPreferenceChange_remoteFailure_shouldReject() throws RemoteException {
+        org.mockito.Mockito.doThrow(new RemoteException()).when(mWindowManager)
+                .setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, 0.85f);
+
+        assertThat(mController.onPreferenceChange(mPreference, 17)).isFalse();
+    }
+
+    @Test
+    public void updateState_fractionalScale_shouldShowExactValue() throws RemoteException {
+        when(mWindowManager.getAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR)).thenReturn(0.85f);
 
         mController.updateState(mPreference);
 
-        verify(mPreference).setValue(mListValues[5]);
-        verify(mPreference).setSummary(mListSummaries[5]);
+        verify(mPreference).setScale(0.85f);
     }
 
     @Test
-    public void updateState_option3Set_shouldUpdatePreferenceToOption3() throws RemoteException {
-        when(mWindowManager.getAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR))
-            .thenReturn(Float.valueOf(mListValues[3]));
-
-        mController.updateState(mPreference);
-
-        verify(mPreference).setValue(mListValues[3]);
-        verify(mPreference).setSummary(mListSummaries[3]);
-    }
-
-    @Test
-    public void onDeveloperOptionsSwitchDisabled_shouldDisablePreference() throws RemoteException {
+    public void onDeveloperOptionsSwitchDisabled_shouldResetAndDisable() throws RemoteException {
         mController.onDeveloperOptionsSwitchDisabled();
 
         verify(mWindowManager).setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, DEFAULT_VALUE);

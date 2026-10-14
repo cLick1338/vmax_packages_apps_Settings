@@ -22,7 +22,6 @@ import android.os.ServiceManager;
 import android.view.IWindowManager;
 
 import androidx.annotation.VisibleForTesting;
-import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
 import com.android.settings.core.PreferenceControllerMixin;
@@ -39,19 +38,16 @@ public class WindowAnimationScalePreferenceController extends
     @VisibleForTesting
     static final float DEFAULT_VALUE = 1;
 
+    private static final int STEPS_PER_SCALE = 20;
+    private static final int MAX_PROGRESS = 40;
+
     private final IWindowManager mWindowManager;
-    private final String[] mListValues;
-    private final String[] mListSummaries;
 
     public WindowAnimationScalePreferenceController(Context context) {
         super(context);
 
         mWindowManager = IWindowManager.Stub.asInterface(
                 ServiceManager.getService(Context.WINDOW_SERVICE));
-        mListValues = context.getResources()
-                .getStringArray(com.android.settingslib.R.array.window_animation_scale_values);
-        mListSummaries = context.getResources().getStringArray(
-                com.android.settingslib.R.array.window_animation_scale_entries);
     }
 
     @Override
@@ -61,8 +57,14 @@ public class WindowAnimationScalePreferenceController extends
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        writeAnimationScaleOption(newValue);
-        return true;
+        if (!(newValue instanceof Integer)) {
+            return false;
+        }
+        final int progress = (Integer) newValue;
+        if (progress < 0 || progress > MAX_PROGRESS) {
+            return false;
+        }
+        return writeAnimationScaleOption(progress / (float) STEPS_PER_SCALE);
     }
 
     @Override
@@ -73,33 +75,23 @@ public class WindowAnimationScalePreferenceController extends
     @Override
     protected void onDeveloperOptionsSwitchDisabled() {
         super.onDeveloperOptionsSwitchDisabled();
-        writeAnimationScaleOption(null);
+        writeAnimationScaleOption(DEFAULT_VALUE);
     }
 
-    private void writeAnimationScaleOption(Object newValue) {
+    private boolean writeAnimationScaleOption(float scale) {
         try {
-            float scale = newValue != null ? Float.parseFloat(newValue.toString()) : DEFAULT_VALUE;
             mWindowManager.setAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR, scale);
             updateAnimationScaleValue();
+            return true;
         } catch (RemoteException e) {
-            // intentional no-op
+            return false;
         }
     }
 
     private void updateAnimationScaleValue() {
         try {
             final float scale = mWindowManager.getAnimationScale(WINDOW_ANIMATION_SCALE_SELECTOR);
-            int index = 0; // default
-            for (int i = 0; i < mListValues.length; i++) {
-                float val = Float.parseFloat(mListValues[i]);
-                if (scale <= val) {
-                    index = i;
-                    break;
-                }
-            }
-            final ListPreference listPreference = (ListPreference) mPreference;
-            listPreference.setValue(mListValues[index]);
-            listPreference.setSummary(mListSummaries[index]);
+            ((AnimationScalePreference) mPreference).setScale(scale);
         } catch (RemoteException e) {
             // intentional no-op
         }
