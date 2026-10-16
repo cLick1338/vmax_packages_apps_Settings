@@ -1,16 +1,29 @@
 //Vmax
 package com.android.settings.display;
 
-/** Inverts Android's backlight range and the joan light HAL's panel mapping. */
+import java.util.function.DoubleUnaryOperator;
+
+/** Inverts Android's brightness-to-backlight mapping and the joan light HAL's panel mapping. */
 final class GammaCalibrationBrightness {
     private final int mMax;
-    private final float mMinimum;
-    private final float mMaximum;
+    private final DoubleUnaryOperator mBacklight;
+    private final int mMinimumLevel;
 
-    GammaCalibrationBrightness(int max, float minimum, float maximum) {
+    // Map the full calibration range independently of the current manual brightness cap.
+    GammaCalibrationBrightness(int max, DoubleUnaryOperator backlight) {
         mMax = max;
-        mMinimum = minimum;
-        mMaximum = maximum;
+        mBacklight = backlight;
+        mMinimumLevel = Math.max(1, halLevel(backlight.applyAsDouble(0)));
+    }
+
+    /** Brightness linear in backlight between the setting minimum and maximum (AOSP default). */
+    static DoubleUnaryOperator linear(float minimum, float maximum) {
+        return brightness -> minimum + brightness * (maximum - minimum);
+    }
+
+    // BrightnessSynchronizer maps backlight floats 0..1 to HAL integers 1..255.
+    private static int halLevel(double backlight) {
+        return (int) Math.round(backlight * 254 + 1);
     }
 
     int raw(int level) {
@@ -22,18 +35,20 @@ final class GammaCalibrationBrightness {
     }
 
     float windowBrightness(int level) {
-        // BrightnessSynchronizer maps HAL integers 1..255 to backlight floats 0..1.
-        float backlight = (level - 1) / 254f;
-        return Math.max(0f, Math.min(1f,
-                (backlight - mMinimum) / (mMaximum - mMinimum)));
+        // The mapping is monotonic, so bisect for the brightness that lands on this level.
+        double target = (level - 1) / 254.0;
+        double low = 0, high = 1;
+        for (int i = 0; i < 40; i++) {
+            double mid = (low + high) / 2;
+            if (mBacklight.applyAsDouble(mid) < target) low = mid; else high = mid;
+        }
+        return (float) high;
     }
 
     int level(int percent) {
         int target = (Math.max(0, Math.min(100, percent)) * mMax + 50) / 100;
-        int minimum = Math.max(1, Math.round(mMinimum * 254 + 1));
-        int maximum = Math.min(255, Math.round(mMaximum * 254 + 1));
-        int best = minimum;
-        for (int level = minimum + 1; level <= maximum; level++) {
+        int best = mMinimumLevel;
+        for (int level = mMinimumLevel + 1; level <= 255; level++) {
             if (Math.abs(raw(level) - target) < Math.abs(raw(best) - target)) {
                 best = level;
             }

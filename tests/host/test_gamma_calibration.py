@@ -24,6 +24,7 @@ package com.android.settings.display;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.TreeMap;
+import java.util.function.DoubleUnaryOperator;
 
 public class GammaCalibrationTest {
     static void check(boolean condition) {
@@ -40,15 +41,20 @@ public class GammaCalibrationTest {
     public static void main(String[] args) throws Exception {
         // Model the complete forward path: window -> Android backlight range -> HAL -> panel.
         // In particular, a HAL level must not be passed directly as a window brightness.
+        float minimum = 19 / 254f; // joan minimum HAL brightness is 20.
+        DoubleUnaryOperator linear = GammaCalibrationBrightness.linear(minimum, 1f);
+        // Nits-linear brightness: backlight rises roughly as the square root of brightness.
+        DoubleUnaryOperator nits = b -> minimum + Math.sqrt(b) * (1f - minimum);
+        for (DoubleUnaryOperator backlight : new DoubleUnaryOperator[]{linear, nits})
         for (int max : new int[]{511, 2047, 4095}) {
-            float minimum = 19 / 254f; // joan minimum HAL brightness is 20.
             GammaCalibrationBrightness mapping =
-                    new GammaCalibrationBrightness(max, minimum, 1f);
+                    new GammaCalibrationBrightness(max, backlight);
             int previous = -1;
             for (int percent = 0; percent <= 100; percent++) {
                 int level = mapping.level(percent);
                 float window = mapping.windowBrightness(level);
-                int deliveredLevel = Math.round((minimum + window * (1f - minimum)) * 254 + 1);
+                int deliveredLevel = (int) Math.round(
+                        backlight.applyAsDouble(window) * 254 + 1);
                 int deliveredRaw = deliveredLevel < 35 ? deliveredLevel * 2
                         : deliveredLevel * max / 255;
                 check(deliveredLevel == level);
@@ -65,6 +71,16 @@ public class GammaCalibrationTest {
                 if (percent < 100) check(mapping.raw(mapping.level(percent + 1)) >= raw);
             }
         }
+        // Joan's configured endpoint is 207/255; calibration must still reach 100%.
+        GammaCalibrationBrightness capped = new GammaCalibrationBrightness(511,
+                GammaCalibrationBrightness.linear(minimum, 206 / 254f));
+        for (int percent = 81; percent <= 100; percent++) {
+            int level = capped.level(percent);
+            check(capped.percent(capped.raw(level)) == percent);
+            check(capped.windowBrightness(level) <= 1f);
+        }
+        check(capped.level(100) == 255);
+        check(capped.windowBrightness(capped.level(100)) == 1f);
         String defaults = "# ROM defaults\n0 44\n10 16\n20 15\n30 12\n40 8\n50 0\n100 0\n";
         Files.writeString(GammaCalibration.DEFAULT, defaults);
         check(!GammaCalibration.load().custom);

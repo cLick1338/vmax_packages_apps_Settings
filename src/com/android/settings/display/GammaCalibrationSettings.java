@@ -6,12 +6,15 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.settings.SettingsEnums;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
+import android.util.Spline;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -34,10 +37,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.IntConsumer;
 
 /** Draft calibration editor with a window-local brightness override and daemon-owned live preview. */
@@ -205,7 +210,8 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
                                 .getInteger(com.android.internal.R.integer
                                         .config_screenBrightnessSettingMaximum));
                     }
-                    mBrightnessMapping = new GammaCalibrationBrightness(mMax, minimum, maximum);
+                    mBrightnessMapping = new GammaCalibrationBrightness(mMax,
+                            backlightMapping(minimum, maximum));
                     mReady = true;
                     if (mHasBrightness) {
                         mRestoreAdjusted = mAdjusted;
@@ -337,7 +343,8 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
     }
 
     private void updateStatus(int raw) {
-        int percent = Math.max(0, Math.min(100, Math.round(raw * 100f / mMax)));
+        // Readback initializes the selection, but must not clamp it to the panel limit.
+        int percent = mHasBrightness ? mPercent : mBrightnessMapping.percent(raw);
         if (raw != mRaw) {
             mRaw = raw;
             boolean keepAdjustment = mAdjusted && percent == mPercent;
@@ -345,7 +352,7 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
             // Do not overwrite a value adjusted while the panel brightness was settling.
             if (!keepAdjustment) {
                 mAdjusted = false;
-                selectValue(raw);
+                selectValue(mHasBrightness ? mExpectedRaw : raw);
             }
             if (mRestoreAdjusted) {
                 mValue = mRestoreValue;
@@ -450,7 +457,7 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
     private void draftChanged() {
         mDirty = true;
         mAdjusted = false;
-        selectValue(mRaw >= 0 ? mRaw : mExpectedRaw);
+        selectValue(mHasBrightness ? mExpectedRaw : Math.max(0, mRaw));
         refreshPoints();
         refreshControls();
     }
@@ -551,6 +558,49 @@ public class GammaCalibrationSettings extends SettingsPreferenceFragment {
             error(request == IMPORT ? R.string.gamma_calibration_import_error
                     : R.string.gamma_calibration_error, e);
         }
+    }
+
+    /** Mirror DisplayDeviceConfig's brightness-to-backlight spline for the window override. */
+    private DoubleUnaryOperator backlightMapping(float minimum, float maximum) {
+        Resources res = getResources();
+        DoubleUnaryOperator linear = GammaCalibrationBrightness.linear(minimum, maximum);
+        if (!res.getBoolean(com.android.internal.R.bool.config_screenBrightnessLinearInNits)) {
+            return linear;
+        }
+        int[] levels = res.getIntArray(com.android.internal.R.array.config_screenBrightnessBacklight);
+        TypedArray array = res.obtainTypedArray(com.android.internal.R.array.config_screenBrightnessNits);
+        float[] rawNits = new float[array.length()];
+        for (int i = 0; i < rawNits.length; i++) rawNits[i] = array.getFloat(i, 0f);
+        array.recycle();
+        if (levels.length < 2 || levels.length != rawNits.length) return linear;
+        float[] raw = new float[levels.length];
+        for (int i = 0; i < raw.length; i++) {
+            raw[i] = BrightnessSynchronizer.brightnessIntToFloat(levels[i]);
+        }
+        // Clamp the table to [minimum, maximum] like constrainNitsAndBacklightArrays().
+        int start = 0;
+        while (start < raw.length - 2 && raw[start + 1] <= minimum) start++;
+        float[] backlight = new float[raw.length];
+        float[] nits = new float[raw.length];
+        int count = 0;
+        for (int i = start; i < raw.length; i++) {
+            boolean last = raw[i] >= maximum || i == raw.length - 1;
+            float value = count == 0 ? Math.max(raw[i], minimum)
+                    : last ? Math.min(raw[i], maximum) : raw[i];
+            int segment = count == 0 ? i : last ? i - 1 : -1;
+            backlight[count] = value;
+            nits[count] = segment < 0 ? rawNits[i] : rawNits[segment]
+                    + (rawNits[segment + 1] - rawNits[segment]) * (value - raw[segment])
+                    / (raw[segment + 1] - raw[segment]);
+            count++;
+            if (last) break;
+        }
+        float[] brightness = new float[count];
+        for (int i = 0; i < count; i++) {
+            brightness[i] = (nits[i] - nits[0]) / (nits[count - 1] - nits[0]);
+        }
+        Spline spline = Spline.createSpline(brightness, Arrays.copyOf(backlight, count));
+        return value -> spline.interpolate((float) value);
     }
 
     private void error(int message, Exception e) {
