@@ -6,6 +6,8 @@
 
     <string name="spoofing_rom_hide_title">Hide root and debugging traces</string>
     <string name="spoofing_rom_hide_summary">Masks debugging state, root files and some system properties. Installed LineageOS apps and services stay visible. The active user\'s choice applies to all users.</string>
+    <string name="spoofing_uapp_dop_title">DSD/DoP in USB Audio Player PRO</string>
+    <string name="spoofing_uapp_dop_summary">Spoofs as Android 9</string>
     <string name="hide_developer_status_title">Hide developer status</string>
     <string name="hide_developer_status_summary">Choose apps that should see developer options and debugging as off</string>
     <string name="hide_developer_status_intro">Selected apps see developer options and USB or wireless debugging as disabled. Reopen an app after changing it here.</string>
