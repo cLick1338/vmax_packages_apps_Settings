@@ -14,12 +14,6 @@
         android:summary="@string/hide_developer_status_summary"
         android:fragment="com.android.settings.spoofing.HideDeveloperStatusSettings" />
 
-    <lineageos.preference.SecureSettingSwitchPreference
-        android:key="spoofing_uapp_dop"
-        android:title="@string/spoofing_uapp_dop_title"
-        android:summary="@string/spoofing_uapp_dop_summary"
-        android:defaultValue="false" />
-
     <com.android.settingslib.widget.FooterPreference
         android:key="spoofing_footer"
         android:title="@string/spoofing_footer"
