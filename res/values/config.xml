@@ -850,4 +850,5 @@
 
     <!-- Disable the Testing Setting Menu for user builds, i.e only display the menu on userdebug/eng builds -->
     <bool name="config_hide_testing_settings_menu_for_user_builds">false</bool>
+    <bool name="config_show_cpu_efficiency_mode">false</bool>
 </resources>

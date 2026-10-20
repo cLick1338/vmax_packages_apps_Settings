@@ -13987,4 +13987,6 @@
     <string name="rotation_suggestions_title">Show rotation button</string>
     <!-- Summary of the switch for the rotation suggestion button -->
     <string name="rotation_suggestions_summary">When auto-rotate is off, show a button in the navigation bar to rotate the screen. Uses the motion sensor while the screen is on.</string>
+    <string name="cpu_efficiency_mode_title">CPU efficiency mode</string>
+    <string name="cpu_efficiency_mode_summary">Caps max frequencies to more efficient ones</string>
 </resources>

@@ -64,6 +64,13 @@
         settings:controller="com.android.settings.fuelgauge.batterytip.BatteryManagerPreferenceController"
         settings:keywords="@string/keywords_battery_adaptive_preferences" />
 
+    <SwitchPreferenceCompat
+        android:key="cpu_efficiency_mode"
+        android:title="@string/cpu_efficiency_mode_title"
+        android:summary="@string/cpu_efficiency_mode_summary"
+        android:persistent="false"
+        settings:controller="com.android.settings.fuelgauge.CpuEfficiencyModePreferenceController" />
+
     <!-- Charging control -->
     <lineageos.preference.LineagePartsPreference
         android:key="charging_control"
