@@ -2,10 +2,10 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="spoofing_settings_title">Spoofing</string>
     <string name="spoofing_settings_summary">Hide root, debugging and developer status from apps</string>
-    <string name="spoofing_footer">Changes apply when affected apps next start. Reopen them or reboot.\n\nSome boot properties, such as verified boot state, are set during startup and stay active regardless of these switches.</string>
+    <string name="spoofing_footer">Changes apply when affected apps next start. Reopen them or reboot.</string>
 
     <string name="spoofing_rom_hide_title">Hide root and debugging traces</string>
-    <string name="spoofing_rom_hide_summary">Masks debugging state, root files and some system properties. Installed LineageOS apps and services stay visible. The active user\'s choice applies to all users.</string>
+    <string name="spoofing_rom_hide_summary">Masks debugging state, root files and some system properties. Installed LineageOS apps and services stay visible. Reboot to fully apply changes.</string>
     <string name="hide_developer_status_title">Hide developer status</string>
     <string name="hide_developer_status_summary">Choose apps that should see developer options and debugging as off</string>
     <string name="hide_developer_status_intro">Selected apps see developer options and USB or wireless debugging as disabled. Reopen an app after changing it here.</string>
