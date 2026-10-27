@@ -2930,7 +2930,7 @@
     <!-- The footer message for switch screen resolution [CHAR LIMIT=NONE] -->
     <string name="screen_resolution_footer">Max resolution uses more of your battery. Switching your resolution may cause some apps to restart.</string>
     <!-- Explanation above the display resolution choices [CHAR LIMIT=NONE] -->
-    <string name="screen_resolution_explanation">Immediately changes the display resolution. A short flash is expected and harmless. Lower resolution for performance and battery life, higher for maximum clarity.</string>
+    <string name="screen_resolution_explanation">Lower resolution for performance and battery life, higher for maximum clarity. The display may flash or blink. Restart SystemUI and clear apps or reboot to fully apply.</string>
     <!-- Error shown when a display mode request fails. -->
     <string name="screen_resolution_change_failed">Couldn\'t change the display resolution</string>
     <!-- Error shown when the active resolution cannot be saved for boot restore. -->
