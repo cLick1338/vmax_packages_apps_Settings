@@ -20,9 +20,13 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.app.settings.SettingsEnums;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.hardware.display.ColorDisplayManager;
 import android.hardware.display.NightDisplayListener;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 
 import androidx.preference.Preference;
 
@@ -47,6 +51,13 @@ public class NightDisplaySettings extends DashboardFragment
 
     private ColorDisplayManager mColorDisplayManager;
     private NightDisplayListener mNightDisplayListener;
+    private final ContentObserver mRedModeObserver =
+            new ContentObserver(new Handler(Looper.getMainLooper())) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updatePreferenceStates();
+                }
+            };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +74,10 @@ public class NightDisplaySettings extends DashboardFragment
 
         // Listen for changes only while visible.
         mNightDisplayListener.setCallback(this);
+        getContext().getContentResolver().registerContentObserver(
+                Settings.Secure.getUriFor(Settings.Secure.NIGHT_DISPLAY_RED_MODE),
+                false, mRedModeObserver);
+        updatePreferenceStates();
     }
 
     @Override
@@ -71,6 +86,7 @@ public class NightDisplaySettings extends DashboardFragment
 
         // Stop listening for state changes.
         mNightDisplayListener.setCallback(null);
+        getContext().getContentResolver().unregisterContentObserver(mRedModeObserver);
     }
 
     @Override

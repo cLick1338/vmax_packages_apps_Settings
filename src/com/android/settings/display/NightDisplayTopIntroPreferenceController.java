@@ -18,7 +18,11 @@ package com.android.settings.display;
 
 import android.content.Context;
 import android.hardware.display.ColorDisplayManager;
+import android.provider.Settings;
 
+import androidx.preference.Preference;
+
+import com.android.settings.R;
 import com.android.settings.core.BasePreferenceController;
 
 /**
@@ -35,5 +39,14 @@ public class NightDisplayTopIntroPreferenceController extends BasePreferenceCont
     public int getAvailabilityStatus() {
         return ColorDisplayManager.isNightDisplayAvailable(mContext)
                 ? AVAILABLE_UNSEARCHABLE : UNSUPPORTED_ON_DEVICE;
+    }
+
+    @Override
+    public void updateState(Preference preference) {
+        super.updateState(preference);
+        final boolean redMode = Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.NIGHT_DISPLAY_RED_MODE, 0) == 1;
+        preference.setTitle(redMode ? R.string.night_display_red_mode_text
+                : R.string.night_display_text);
     }
 }

@@ -3028,6 +3028,9 @@
     <string name="night_display_end_time_title">End time</string>
     <!-- Night display screen, setting the color temperature of the display. [CHAR LIMIT=30] -->
     <string name="night_display_temperature_title">Intensity</string>
+    <string name="night_display_red_mode_title">Red light mode</string>
+    <string name="night_display_red_mode_summary">Monochromatic red to preserve night vision</string>
+    <string name="night_display_red_mode_text">Night Light shows your screen in monochromatic shades of red. Use the brightness control to adjust how bright the screen is.</string>
     <!-- Display settings screen, summary of night display when off and will *never* turn on automatically. [CHAR LIMIT=NONE] -->
     <string name="night_display_summary_off_auto_mode_never">Will never turn on automatically</string>
     <!-- Display settings screen, summary format of night display when off and will turn on automatically at a user defined time. [CHAR LIMIT=NONE] -->

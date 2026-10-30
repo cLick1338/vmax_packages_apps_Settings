@@ -59,4 +59,10 @@
         settings:controller="com.android.settings.display.NightDisplayIntensityPreferenceController"
         settings:unavailableSliceSubtitle="@string/night_display_not_currently_on"/>
 
+    <SwitchPreferenceCompat
+        android:key="night_display_red_mode"
+        android:title="@string/night_display_red_mode_title"
+        android:summary="@string/night_display_red_mode_summary"
+        settings:controller="com.android.settings.display.NightDisplayRedModePreferenceController"/>
+
 </PreferenceScreen>

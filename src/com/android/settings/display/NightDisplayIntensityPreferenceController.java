@@ -18,6 +18,7 @@ package com.android.settings.display;
 
 import android.content.Context;
 import android.hardware.display.ColorDisplayManager;
+import android.provider.Settings;
 import android.text.TextUtils;
 
 import androidx.preference.Preference;
@@ -40,7 +41,7 @@ public class NightDisplayIntensityPreferenceController extends SliderPreferenceC
     public int getAvailabilityStatus() {
         if (!ColorDisplayManager.isNightDisplayAvailable(mContext)) {
             return UNSUPPORTED_ON_DEVICE;
-        } else if (!mColorDisplayManager.isNightDisplayActivated()) {
+        } else if (!isIntensityEnabled()) {
             return DISABLED_DEPENDENT_SETTING;
         }
         return AVAILABLE;
@@ -74,7 +75,13 @@ public class NightDisplayIntensityPreferenceController extends SliderPreferenceC
     @Override
     public final void updateState(Preference preference) {
         super.updateState(preference);
-        preference.setEnabled(mColorDisplayManager.isNightDisplayActivated());
+        preference.setEnabled(isIntensityEnabled());
+    }
+
+    private boolean isIntensityEnabled() {
+        return mColorDisplayManager.isNightDisplayActivated()
+                && Settings.Secure.getInt(mContext.getContentResolver(),
+                        Settings.Secure.NIGHT_DISPLAY_RED_MODE, 0) != 1;
     }
 
     @Override
